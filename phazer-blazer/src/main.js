@@ -29,8 +29,8 @@ document.querySelector('#app').innerHTML = `
       <input type="hidden" name="damage" value="50" />
 
       <div id="bossPanel">
-        <p id="boss-health">Boss Health: 1000</p>
-        <p id="boss-status">Boss Status: alive</p>
+        <p id="boss-health">Boss Health: </p>
+        <p id="boss-status">Boss Status: </p>
       </div>
     </div>
 
