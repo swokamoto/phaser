@@ -1,38 +1,35 @@
 import './style.css'
 
-document.querySelector('#app').innerHTML = `
+let attackValue = 50;
+
+document.querySelector('#app').innerHTML = /*html*/ `
   <div>
     <h1>PHZR BLZR!</h1>
-        
-    <h3>Server-Sent Events with htmx</h3>
-      <div
-        id="inventoryPanel"
-        hx-ext="sse"
-        sse-connect="/api/sse"
-        sse-swap="inventoryUpdate"
-      >
-        "Waiting for server updates..."
-      </div>
 
-    <div>
-      <h1>Raid Activity</h1>
-      <button 
-        id="attack-button" 
-        hx-post="/api/attack" 
-        hx-trigger="click" 
-        hx-include="[name=damage]" 
-        hx-target="#bossPanel"
-        hx-swap="innerHTML"
-      >
-        Attack Boss
-      </button>
-      <input type="hidden" name="damage" value="50" />
-
-      <div id="bossPanel">
-        <p id="boss-health">Boss Health: </p>
-        <p id="boss-status">Boss Status: </p>
-      </div>
+    <div
+      hx-ext="sse"
+      sse-connect="/api/raid"
+      sse-swap="updateBoss"
+    >
+      Boss Health:
     </div>
 
+    <div>
+      <h2>Incoming Threat</h2>
+
+      <div>Attack Value: <span id="attack-display">${attackValue}</span></div>
+      <input type="hidden" id="attack-value" name="damage" value="${attackValue}" />
+      <button 
+        id="attack-button" 
+        hx-post="/api/attack"
+        hx-swap="none"
+        hx-include="#attack-value"
+      >
+        Attack
+      </button>
+
+
+
+    </div>
   </div>
-`
+`; // <-- This closing backtick and parenthesis were missing!

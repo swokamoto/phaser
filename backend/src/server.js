@@ -1,34 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.get('/api/sse', (req, res) => {
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
-    
-    res.write('data: Connection established\n\n');
-
-    let counter = 1;
-
-    const interval = setInterval(() => {
-        const html = `<ul><li>Item #${counter}</li></ul>`;
-        res.write(`event: inventoryUpdate\n`);
-        res.write(`data: ${html}\n\n`);
-        counter++;
-    }, 3000);
-    
-    req.on('close', () => clearInterval(interval));
-});
 
 
 const boss = {
@@ -37,6 +14,23 @@ const boss = {
 };
 
 const players = []; // List of connected players (SSE clients)
+
+let updatePending = false;
+
+function broadcastBossState() {
+        players.forEach(player => player.write(`event: updateBoss\ndata: "Boss Health: ${boss.health}"\n\n`));
+}
+
+function scheduleBroadcast() {
+    if (!updatePending) {
+        updatePending = true;
+        setTimeout(() => {
+            broadcastBossState();
+            updatePending = false;
+        }, 100); // Throttle interval in ms
+    }
+}
+
 
 app.get('/api/raid', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -48,11 +42,9 @@ app.get('/api/raid', (req, res) => {
     players.push(res);
     console.log(`New player connected. Total players: ${players.length}`);
     // Send initial boss state as HTML
-    const html = `
-      <p id="boss-health">Boss Health: ${boss.health}</p>
-      <p id="boss-status">Boss Status: ${boss.status}</p>
-    `;
-    res.write(`data: ${html}\n\n`);
+    
+    res.write(`event: updateBoss\n`);
+    res.write(`data: "Boss Health: ${boss.health}"\n\n`);
 
     // Remove the player when the connection is closed
     req.on('close', () => {
@@ -75,13 +67,12 @@ app.post('/api/attack', (req, res) => {
             boss.health = 0;
             boss.status = 'defeated';
         }
-
-        // Send HTML response to the client
-        res.status(200).send(`
-        <p id="boss-health">Boss Health: ${boss.health}</p>
-        <p id="boss-status">Boss Status: ${boss.status}</p>
-        `);
     }
+
+    scheduleBroadcast();
+
+    res.status(204).end();
+
 });
 
 app.listen(PORT, () => {

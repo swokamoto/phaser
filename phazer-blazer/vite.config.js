@@ -4,4 +4,5 @@ export default {
       '/api': 'http://localhost:5000', // Proxy API requests to the backend
     },
   },
+
 };
