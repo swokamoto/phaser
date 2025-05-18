@@ -9,9 +9,16 @@ document.querySelector('#app').innerHTML = /*html*/ `
     <div
       hx-ext="sse"
       sse-connect="/api/raid"
-      sse-swap="updateBoss"
     >
-      Boss Health:
+
+      <div sse-swap="updateBoss">
+        Boss Health:
+      </div>
+
+      <div sse-swap="updatePlayer">
+        Player Health:
+      </div>
+
     </div>
 
     <div>
@@ -21,7 +28,7 @@ document.querySelector('#app').innerHTML = /*html*/ `
       <input type="hidden" id="attack-value" name="damage" value="${attackValue}" />
       <button 
         id="attack-button" 
-        hx-post="/api/attack"
+        hx-post="/api/player/attack"
         hx-swap="none"
         hx-include="#attack-value"
       >
